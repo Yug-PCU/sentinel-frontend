@@ -1,0 +1,126 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Inter Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  /* Headlines only. Data (the risk score) stays in the sans face. */
+  --font-display: 'Archivo Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Dark navy surfaces and ink. Text colors navy-50 to navy-300 are at least
+     6:1 against every surface (navy-800 to navy-950); navy-400 is the lightest
+     border that still clears 3:1 for form fields. */
+  --color-navy-50: #f3f6fa;
+  --color-navy-100: #e0e7f1;
+  --color-navy-200: #bccadf;
+  --color-navy-300: #8fa2c0;
+  --color-navy-400: #5b7399;
+  --color-navy-500: #345078;
+  --color-navy-600: #203a5c;
+  --color-navy-700: #162c49;
+  --color-navy-800: #0e2139;
+  --color-navy-850: #0a1a30;
+  --color-navy-900: #071324;
+  --color-navy-950: #040b18;
+
+  /* Risk scale, low to critical. Reserved for risk and always paired with an
+     icon and a label. Each clears 3:1 against the card surfaces. */
+  --color-risk-low: #0ca30c;
+  --color-risk-medium: #fab219;
+  --color-risk-high: #ec835a;
+  --color-risk-critical: #d03b3b;
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-marquee-reverse: marquee 48s linear infinite reverse;
+  --animate-scan: scan 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  --animate-blink: blink 1.4s steps(2, start) infinite;
+
+  @keyframes marquee {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: -50% 0;
+    }
+  }
+
+  @keyframes scan {
+    0% {
+      top: 0%;
+      opacity: 0;
+    }
+    12%,
+    88% {
+      opacity: 1;
+    }
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+
+  @keyframes blink {
+    to {
+      visibility: hidden;
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-navy-950);
+  }
+
+  body {
+    @apply bg-navy-950 font-sans text-navy-100 antialiased;
+  }
+
+  ::selection {
+    @apply bg-teal-400/30 text-white;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Faint grid, fading out toward the bottom. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 35%, transparent 100%);
+}
+
+/* Two opposite corners cut off, like a HUD tab. Focus styles must sit inside
+   (negative outline offset) because clip-path also clips outlines. */
+@utility chamfer {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+/* Outlined display text, for decorative numbers and the footer wordmark. */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgb(70 236 213 / 0.55);
+}
+
+/* The risk gauge sweeps up from 0 when a report appears, and between scores after that. */
+.gauge-fill {
+  transition: stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@starting-style {
+  .gauge-fill {
+    stroke-dashoffset: 100;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gauge-fill {
+    transition: none;
+  }
+}
