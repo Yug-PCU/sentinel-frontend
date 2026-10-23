@@ -1,8 +1,6 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { SAMPLE_MESSAGES } from '../data/samples.js'
+import { describe, expect, it, vi } from 'vitest'
 import { analyzeMessage, requestAnalysis } from './analyze.js'
-import { MOCK_DELAY_MS } from './mock.js'
 
 const INPUT = { message: 'Guaranteed 40% a month!', url: 'https://fast-returns.example' }
 
@@ -19,10 +17,6 @@ function hangingFetch() {
       }),
   )
 }
-
-afterEach(() => {
-  vi.useRealTimers()
-})
 
 describe('requestAnalysis', () => {
   it('POSTs { message, url } as JSON to /analyze and returns the body', async () => {
@@ -98,28 +92,22 @@ describe('requestAnalysis', () => {
 })
 
 describe('analyzeMessage', () => {
-  it('returns mock data without calling the network when mock mode is on', async () => {
-    vi.useFakeTimers()
-    const fetchMock = vi.fn()
-    vi.stubGlobal('fetch', fetchMock)
-    const sample = SAMPLE_MESSAGES.find((item) => item.id === 'crypto-vip')
-
-    const pending = analyzeMessage({ message: sample.message, url: sample.url }, { useMock: true })
-    await vi.advanceTimersByTimeAsync(MOCK_DELAY_MS)
-
-    await expect(pending).resolves.toMatchObject({ source: 'mock', riskScore: 94, riskLevel: 'critical' })
-    expect(fetchMock).not.toHaveBeenCalled()
-  })
-
-  it('calls the backend and normalizes its response when mock mode is off', async () => {
+  it('calls the backend and normalizes its response', async () => {
     const body = { risk_score: '42', risk_level: 'Moderate', warnings: ['Unsolicited offer'] }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(body)))
 
-    await expect(analyzeMessage(INPUT, { useMock: false })).resolves.toMatchObject({
-      source: 'api',
+    await expect(analyzeMessage(INPUT)).resolves.toEqual({
       riskScore: 42,
       riskLevel: 'medium',
-      warnings: [{ title: 'Unsolicited offer' }],
+      warnings: [
+        {
+          id: 'warning-0',
+          title: 'Unsolicited offer',
+          description: null,
+          severity: null,
+          evidence: [],
+        },
+      ],
     })
   })
 })

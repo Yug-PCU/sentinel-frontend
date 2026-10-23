@@ -1,7 +1,3 @@
-// The hero's 3D "scam radar": metallic coins (money) and red diamonds (red flags)
-// float over a radar floor whose sweeping beam lights up every red flag it passes.
-// The pointer pushes nearby pieces away and tilts the camera. Plain three.js,
-// loaded on demand by HeroScene.
 import {
   ACESFilmicToneMapping,
   AdditiveBlending,
@@ -39,10 +35,9 @@ const FLAG_COUNT = 8
 const FLOOR_Y = -2.6
 const RADAR_RADIUS = 10.5
 const BEAM_WIDTH = Math.PI / 5
-const BEAM_SPEED = 0.55 // radians per second
+const BEAM_SPEED = 0.55 // rads
 const PUSH_RADIUS = 2.6
 
-// Small seeded random generator so the layout is the same on every visit.
 function seededRandom(seed) {
   let state = seed
   return () => {
@@ -141,7 +136,6 @@ export class RadarScene {
     ]
     this.sharedResources = [coinGeometry, edgeGeometry, flagGeometry, ...coinMaterials]
 
-    // Spread pieces out, keeping a minimum gap between them.
     const placed = []
     const place = () => {
       for (let attempt = 0; attempt < 60; attempt += 1) {

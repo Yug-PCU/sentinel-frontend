@@ -52,7 +52,6 @@ export default function AnalyzerForm({
     onSubmit()
   }
 
-  // Ctrl+Enter (Cmd+Enter on macOS) submits from the textarea.
   function handleMessageKeyDown(event) {
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault()

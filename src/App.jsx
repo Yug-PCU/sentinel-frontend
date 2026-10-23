@@ -12,13 +12,8 @@ export default function App() {
   return (
     <>
       <Loader />
-      <Cursor />
-      <a
-        href="#analyze"
-        className="sr-only rounded-lg bg-teal-400 px-4 py-2 font-semibold text-navy-950 focus:not-sr-only focus:fixed focus:top-20 focus:left-6 focus:z-[60]"
-      >
-        Skip to the analyzer
-      </a>
+      
+      
       <Frame />
       <main className="overflow-x-clip">
         <Hero />

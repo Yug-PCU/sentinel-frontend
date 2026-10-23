@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { USE_MOCK_API } from '../config.js'
 import { useActiveSection, useScrollProgressVariable } from '../hooks/useScrollTracking.js'
 import ScrambleText from './fx/ScrambleText.jsx'
 import Logo from './Logo.jsx'
-import SourceBadge from './SourceBadge.jsx'
 import { buttonClass } from './ui.js'
 
 const SECTIONS = [
@@ -13,11 +11,7 @@ const SECTIONS = [
 ]
 const SECTION_IDS = ['top', ...SECTIONS.map((section) => section.id)]
 
-/**
- * The HUD around the page: a hairline border inset from the window, a top bar
- * (menu, wordmark, section nav, mode badge, call to action), a side rail with
- * scroll progress on wide screens, and a full-screen menu.
- */
+
 export default function Frame() {
   useScrollProgressVariable()
   const active = useActiveSection(SECTION_IDS)
@@ -68,9 +62,6 @@ export default function Frame() {
           </nav>
 
           <div className="ml-auto flex items-center gap-3 pr-2 md:ml-0">
-            <span className="hidden sm:inline-flex">
-              <SourceBadge mock={USE_MOCK_API}>{USE_MOCK_API ? 'Mock data' : 'Live API'}</SourceBadge>
-            </span>
             <a href="#analyze" className={`${buttonClass('primary')} px-4! py-2.5!`}>
               <ScrambleText text="Scan now" trigger="hover" duration={400} />
             </a>
@@ -150,7 +141,6 @@ function SiteMenu({ active, onClose, toggleRef }) {
       </nav>
       <div className="relative mt-10 flex flex-wrap items-center justify-between gap-4 font-mono text-[11px] tracking-[0.2em] text-navy-300 uppercase">
         <span>Sentinel / Investment scam detection</span>
-        <SourceBadge mock={USE_MOCK_API}>{USE_MOCK_API ? 'Mock data' : 'Live API'}</SourceBadge>
       </div>
     </div>
   )

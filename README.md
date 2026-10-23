@@ -4,22 +4,30 @@ Web interface for Sentinel, a financial scam detector. Users paste an investment
 message (and optionally a link from it), and Sentinel shows a 0–100 risk score, a
 risk category, and an explanation of each warning sign.
 
-Built with React 19, Vite 8, and Tailwind CSS 4. This repo is the frontend only.
-The analysis itself happens in the backend, which the app calls at `POST /analyze`.
-
-> **Mock mode is on by default.** Until the backend is connected, the app shows
-> canned sample results. They're labeled "Mock result" everywhere they appear,
-> and the header shows a "Mock data" badge.
+Built with React 19, Vite 8, and Tailwind CSS 4. This repo is the frontend. The
+analysis runs in the sibling `sentinel-backend` service at `POST /analyze`; there
+is no mock mode in the app.
 
 ## Getting started
 
-Requires Node.js 22.22+, 24.15+, or 26+. These versions are required by the test
-tools; `dev` and `build` alone also run on Node 20.19+.
+Start the backend first:
 
 ```bash
+cd sentinel-backend
+source .venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+```
+
+Then start the frontend:
+
+```bash
+cd sentinel-frontend
 npm install
 npm run dev        # http://localhost:5173
 ```
+
+Requires Node.js 22.22+, 24.15+, or 26+. These versions are required by the test
+tools; `dev` and `build` alone also run on Node 20.19+.
 
 | Command | What it does |
 | --- | --- |
@@ -36,21 +44,9 @@ server after any change, because `VITE_*` values are compiled into the bundle.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `VITE_USE_MOCK_API` | `true` | `true` shows mock results. `false` sends real requests. |
 | `VITE_API_BASE_URL` | empty | Backend origin for production, e.g. `https://api.example.com`. Empty means same origin. |
 | `VITE_REQUEST_TIMEOUT_MS` | `30000` | How long to wait for the backend before showing a timeout error. |
 | `API_PROXY_TARGET` | `http://localhost:8000` | Dev/preview server only: where `/analyze` requests are forwarded. |
-
-## Connecting the backend
-
-1. Start the backend so that it serves `POST /analyze` (contract below).
-2. Create `.env.local`:
-   ```bash
-   VITE_USE_MOCK_API=false
-   API_PROXY_TARGET=http://localhost:8000   # change if the backend uses another port
-   ```
-3. Restart `npm run dev`. The header badge changes from "Mock data" to "Live API",
-   and reports are labeled "Live analysis".
 
 In development, the browser sends requests to the Vite dev server, which forwards
 them to `API_PROXY_TARGET`. The backend doesn't need CORS for local development.
@@ -95,7 +91,8 @@ For production, pick one:
     {
       "title": "Guaranteed high returns",
       "description": "Promises 40% monthly returns with no risk. Legitimate investments can't guarantee returns.",
-      "severity": "critical"
+      "severity": "critical",
+      "evidence": ["guarantees 40% returns", "zero risk"]
     }
   ]
 }
@@ -116,15 +113,17 @@ Warning object fields:
 | `severity` | `level`, `risk_level` | `low`, `medium`, `high`, or `critical`. Optional. |
 | `evidence` | | Optional string or list of strings quoted from the message. |
 
-The canned responses in `src/api/mock.js` follow this format, so they double as examples.
+The response normalizer accepts this shape from the Sentinel backend and also the
+older lowercase/alternate field names above, so the UI stays tolerant of contract
+drift.
 
 ### Errors
 
 For any non-2xx status, the UI shows an error state with a **Try again** button.
 If the body is JSON, the frontend shows its `detail`, `error`, or `message` field.
 FastAPI-style validation lists (`detail: [{ "msg": … }]`) and `text/plain` bodies
-also work. Network failures, timeouts, and non-JSON 200 responses each get their
-own message.
+also work. Network failures, timeouts, non-JSON 200 responses, and cancellations
+each get their own handling.
 
 ## Project structure
 
@@ -135,9 +134,8 @@ src/
 ├── index.css              Tailwind setup, theme colors (navy, risk scale), gauge animation
 ├── config.js              Reads the VITE_* settings above, plus input length limits
 ├── api/
-│   ├── analyze.js         analyzeMessage(): mock or real POST /analyze, timeout, error handling
+│   ├── analyze.js         analyzeMessage(): real POST /analyze, timeout, error handling
 │   ├── normalize.js       Checks the response JSON and converts it for the UI
-│   ├── mock.js            Canned responses used in mock mode
 │   └── errors.js          AnalysisError with kind: network | timeout | http | invalid_response
 ├── hooks/
 │   ├── useAnalysis.js     Request state (idle → loading → success | error), cancel, retry
@@ -153,7 +151,7 @@ src/
 │   ├── Analyzer.jsx       Holds the form state and connects the form to the results panel
 │   ├── AnalyzerForm.jsx   Message box, optional link, examples, Analyze / Cancel / Clear
 │   ├── ResultsPanel.jsx   Empty, loading, error, and report states
-│   ├── RiskReport.jsx     Score, category, warning signs, next steps, analyzed input
+│   ├── RiskReport.jsx     Score, category, warning signs, next steps
 │   ├── RiskGauge.jsx      0–100 semicircle meter
 │   ├── RiskBadge.jsx      Risk category pill (icon + label)
 │   ├── WarningList.jsx    Warning signs with severity
@@ -162,28 +160,15 @@ src/
 │   ├── scene/RadarScene.js       The three.js scene, loaded on demand in its own chunk
 │   ├── SectionHeader.jsx, HowItWorks.jsx, RedFlags.jsx, Footer.jsx
 │   ├── fx/                Effects: Loader (intro), Cursor, ScrambleText, Reveal, Marquee, TiltCard, Corners
-│   ├── Logo.jsx, SourceBadge.jsx
+│   ├── Logo.jsx
 │   ├── riskTones.js       Colors and icons for each risk level
 │   └── ui.js              Shared button and card classes
 └── test/setup.js          Test setup
 ```
 
 Tests sit next to the code they cover (`*.test.js` / `*.test.jsx`).
-`App.live.test.jsx` runs the whole app with mock mode off and `fetch` stubbed.
-
-## How mock mode works
-
-`analyzeMessage()` in `src/api/analyze.js` returns one of four canned responses
-(low, medium, high, critical) after a 1.2-second delay instead of calling the
-backend. Each "Try an example" message gets the response written for it. Any
-other text gets a response picked from a hash of the message, so the same text
-always gives the same result. **No analysis happens in mock mode.** The canned
-responses go through the same parsing as real ones, so the UI exercises the real
-contract.
-
-When the backend is ready, set `VITE_USE_MOCK_API=false` (or change the default
-in `src/config.js`). Once mock mode is no longer needed, delete `src/api/mock.js`
-and the mock branch in `analyzeMessage()`.
+`App.test.jsx` covers the full form → request → report flow with `fetch` stubbed;
+`App.live.test.jsx` covers backend errors, retry, and network failures.
 
 ## Design notes
 

@@ -29,7 +29,7 @@ export default function Hero() {
           id="hero-heading"
           className="mt-8 font-display text-[clamp(2.3rem,8.4vw,9.75rem)] leading-[0.86] font-black tracking-[-0.04em] text-white uppercase font-stretch-semi-expanded"
         >
-          <span className="sr-only">Spot the scam before it costs you.</span>
+          <span className="sr-only">Spot the scam before it spots you.</span>
           <span aria-hidden="true" className="block">
             <ScrambleText text="Spot the scam" duration={900} />
           </span>
@@ -38,7 +38,7 @@ export default function Hero() {
             <ScrambleText text="before it" duration={900} />
           </span>
           <span aria-hidden="true" className="block text-teal-300">
-            <ScrambleText text="costs you." duration={1000} />
+            <ScrambleText text="spots you." duration={1000} />
           </span>
         </h1>
 

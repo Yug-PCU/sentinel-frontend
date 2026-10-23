@@ -1,5 +1,3 @@
-// Endless band of scam phrases, two rows moving in opposite directions.
-// Decorative: the same red flags are explained in text in the Red flags section.
 const PHRASES = [
   'Guaranteed returns',
   'Act now',

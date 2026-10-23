@@ -1,6 +1,5 @@
 import { useId } from 'react'
 
-// Sentinel mark: a teal shield with a check.
 export default function Logo({ className = '' }) {
   const gradientId = useId()
   return (

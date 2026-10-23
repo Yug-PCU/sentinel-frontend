@@ -1,5 +1,4 @@
 import { ArrowUp } from 'lucide-react'
-import { USE_MOCK_API } from '../config.js'
 import ScrambleText from './fx/ScrambleText.jsx'
 import { buttonClass, LABEL_CLASS } from './ui.js'
 
@@ -46,7 +45,6 @@ export default function Footer() {
         <div className={`${LABEL_CLASS} mt-8 flex-wrap justify-between gap-y-2 border-t border-white/10 pt-6`}>
           <span>© {YEAR} Sentinel</span>
           <span>Investment scam detection</span>
-          <span>{USE_MOCK_API ? 'Mock data mode' : 'Connected to API'}</span>
         </div>
       </div>
     </footer>

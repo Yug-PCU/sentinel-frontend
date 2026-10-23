@@ -1,7 +1,6 @@
 import ScrambleText from './fx/ScrambleText.jsx'
 import { LABEL_CLASS } from './ui.js'
 
-/** Grid-lined section header: index label, giant decoding title, optional side note. */
 export default function SectionHeader({ id, index, eyebrow, title, children }) {
   return (
     <div className="grid border-y border-white/10 lg:grid-cols-12">

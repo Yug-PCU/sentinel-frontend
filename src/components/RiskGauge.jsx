@@ -2,10 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '../hooks/useMediaQuery.js'
 import { getRiskTone } from './riskTones.js'
 
-// Semicircular meter. pathLength=100 lets the dash offset be the score itself.
 const ARC = 'M 20 100 A 80 80 0 0 1 180 100'
 
-// Counts the visible number up to `value` in step with the arc's 900 ms sweep.
 function useCountUp(value, duration = 900) {
   const reduceMotion = useReducedMotion()
   const [display, setDisplay] = useState(0)

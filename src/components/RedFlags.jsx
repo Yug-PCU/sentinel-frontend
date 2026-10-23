@@ -4,7 +4,7 @@ import Reveal from './fx/Reveal.jsx'
 import TiltCard from './fx/TiltCard.jsx'
 import SectionHeader from './SectionHeader.jsx'
 
-const RED_FLAGS = [
+const EGS = [
   {
     icon: TrendingUp,
     title: 'Guaranteed high returns',
@@ -49,7 +49,7 @@ export default function RedFlags() {
         </SectionHeader>
 
         <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {RED_FLAGS.map(({ icon: Icon, title, text }, index) => (
+          {EGS.map(({ icon: Icon, title, text }, index) => (
             <Reveal as="li" key={title} delay={(index % 3) * 110}>
               <TiltCard className="h-full rounded-[22px] border border-white/10 bg-navy-900/70 p-7 hover:border-teal-300/40">
                 <Corners className="text-teal-300/70 opacity-0 transition-opacity duration-300 group-hover/tilt:opacity-100" />

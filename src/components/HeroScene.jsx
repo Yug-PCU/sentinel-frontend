@@ -5,11 +5,6 @@ function supportsWebGL() {
   return typeof window !== 'undefined' && 'WebGLRenderingContext' in window
 }
 
-/**
- * Hosts the 3D radar. three.js is downloaded only here, after the page renders,
- * so it never delays the analyzer. Without WebGL (or if it fails) a static radar
- * drawing stands in. With reduced motion the scene renders one still frame.
- */
 export default function HeroScene() {
   const containerRef = useRef(null)
   const reduceMotion = useReducedMotion()

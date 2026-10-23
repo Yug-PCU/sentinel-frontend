@@ -1,22 +1,17 @@
-import { ANALYZE_ENDPOINT, API_BASE_URL, REQUEST_TIMEOUT_MS, USE_MOCK_API } from '../config.js'
+import { ANALYZE_ENDPOINT, API_BASE_URL, REQUEST_TIMEOUT_MS } from '../config.js'
 import { AnalysisError } from './errors.js'
-import { mockAnalyze } from './mock.js'
 import { normalizeAnalysis } from './normalize.js'
 
 const MAX_DETAIL_LENGTH = 300
 
 /**
- * Analyze a message and return the normalized result, tagged with where it came from.
- * While USE_MOCK_API is on (the default until the backend is ready) the result is canned mock data.
+ * Analyze a message and return the normalized result from the backend.
  * @param {{ message: string, url: string | null }} input
- * @param {{ signal?: AbortSignal, useMock?: boolean }} [options]
- * @returns {Promise<import('./normalize.js').Analysis & { source: 'mock' | 'api' }>}
+ * @param {{ signal?: AbortSignal }} [options]
+ * @returns {Promise<import('./normalize.js').Analysis>}
  */
-export async function analyzeMessage(input, { signal, useMock = USE_MOCK_API } = {}) {
-  const body = useMock
-    ? await mockAnalyze(input, { signal })
-    : await requestAnalysis(input, { signal })
-  return { ...normalizeAnalysis(body), source: useMock ? 'mock' : 'api' }
+export async function analyzeMessage(input, { signal } = {}) {
+  return normalizeAnalysis(await requestAnalysis(input, { signal }))
 }
 
 /**

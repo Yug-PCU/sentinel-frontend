@@ -1,11 +1,27 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.jsx'
 import { SAMPLE_MESSAGES } from './data/samples.js'
 
-// Mock results arrive after MOCK_DELAY_MS (1.2 s), so wait a little longer than that.
 const RESULT_WAIT = { timeout: 4000 }
+
+const REPORT = {
+  risk_score: 82,
+  risk_level: 'critical',
+  warnings: [
+    {
+      title: 'Guaranteed high returns',
+      description: 'No legitimate investment can guarantee returns.',
+      severity: 'critical',
+      evidence: ['guarantees 40% returns'],
+    },
+  ],
+}
+
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+}
 
 function renderApp() {
   const user = userEvent.setup()
@@ -19,11 +35,17 @@ function renderApp() {
 
 const sample = (id) => SAMPLE_MESSAGES.find((item) => item.id === id)
 
-describe('Sentinel in mock mode (default)', () => {
-  it('says it is using mock data', () => {
+beforeEach(() => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(REPORT)))
+})
+
+describe('Sentinel analyzer', () => {
+  it('starts with the analyzer and an empty report', () => {
     renderApp()
-    expect(screen.getByText('Mock data')).toBeInTheDocument()
+
+    expect(screen.getByRole('heading', { name: /scan a message/i })).toBeInTheDocument()
     expect(screen.getByText(/your risk report will appear here/i)).toBeInTheDocument()
+    expect(screen.queryByText(/mock data|live api/i)).not.toBeInTheDocument()
   })
 
   it('asks for a message before analyzing', async () => {
@@ -34,6 +56,7 @@ describe('Sentinel in mock mode (default)', () => {
     expect(messageField).toHaveAttribute('aria-invalid', 'true')
     expect(messageField).toHaveFocus()
     expect(screen.getByText(/your risk report will appear here/i)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
   })
 
   it('rejects an invalid link', async () => {
@@ -44,9 +67,15 @@ describe('Sentinel in mock mode (default)', () => {
 
     expect(screen.getByText(/doesn't look like a web address/i)).toBeInTheDocument()
     expect(urlField).toHaveFocus()
+    expect(fetch).not.toHaveBeenCalled()
   })
 
-  it('shows a loading state, then a clearly labeled mock report', async () => {
+  it('shows a loading state, then the backend report', async () => {
+    let resolveRequest
+    const pending = new Promise((resolve) => {
+      resolveRequest = resolve
+    })
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(pending))
     const { user, messageField, urlField } = renderApp()
     const crypto = sample('crypto-vip')
 
@@ -58,26 +87,40 @@ describe('Sentinel in mock mode (default)', () => {
     expect(screen.getByRole('button', { name: /analyzing/i })).toBeDisabled()
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
 
-    expect(await screen.findByText(/mock result — not a real analysis/i, {}, RESULT_WAIT)).toBeInTheDocument()
+    resolveRequest(jsonResponse(REPORT))
+
+    expect(await screen.findByText('Guaranteed high returns', {}, RESULT_WAIT)).toBeInTheDocument()
     const report = within(screen.getByRole('region', { name: /risk report/i }))
-    expect(report.getByText('Mock result')).toBeInTheDocument()
-    expect(report.getByRole('meter', { name: /risk score/i })).toHaveAttribute('aria-valuenow', '94')
+    expect(report.getByRole('meter', { name: /risk score/i })).toHaveAttribute('aria-valuenow', '82')
     expect(report.getByText('Critical risk')).toBeInTheDocument()
-    expect(report.getByText('Guaranteed high returns')).toBeInTheDocument()
+    expect(report.getByText(/guarantees 40% returns/i)).toBeInTheDocument()
+    expect(screen.queryByText(/what was analyzed/i)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /analyze message/i })).toBeEnabled()
   })
 
   it('submits with Ctrl+Enter from the message field', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse({ risk_score: 5, risk_level: 'low', warnings: [] })),
+    )
     const { user, messageField } = renderApp()
     await user.click(screen.getByRole('button', { name: sample('statement-notice').label }))
     await user.click(messageField)
     await user.keyboard('{Control>}{Enter}{/Control}')
 
-    expect(screen.getByRole('button', { name: /analyzing/i })).toBeDisabled()
     expect(await screen.findByText('Low risk', {}, RESULT_WAIT)).toBeInTheDocument()
   })
 
   it('can cancel an analysis in progress', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url, { signal }) =>
+          new Promise((_resolve, reject) => {
+            signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')))
+          }),
+      ),
+    )
     const { user } = renderApp()
     await user.click(screen.getByRole('button', { name: sample('real-estate').label }))
     await user.click(screen.getByRole('button', { name: /analyze message/i }))
@@ -88,6 +131,10 @@ describe('Sentinel in mock mode (default)', () => {
   })
 
   it('flags an outdated report and can start over', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse({ risk_score: 72, risk_level: 'high', warnings: [] })),
+    )
     const { user, messageField } = renderApp()
     await user.click(screen.getByRole('button', { name: sample('wrong-number-stock').label }))
     await user.click(screen.getByRole('button', { name: /analyze message/i }))

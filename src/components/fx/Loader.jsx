@@ -17,15 +17,9 @@ function markIntroSeen() {
   try {
     sessionStorage.setItem(SEEN_KEY, '1')
   } catch {
-    // Storage can be unavailable (private mode, blocked site data); the intro just plays again.
   }
 }
 
-/**
- * Intro overlay: a percentage counter that runs to 100 once fonts are ready, then
- * a skewed panel wipes up to reveal the page. Plays once per browser session and
- * never for reduced motion.
- */
 export default function Loader() {
   const reduceMotion = useReducedMotion()
   const [phase, setPhase] = useState(() => (introSeen() ? 'done' : 'counting'))
@@ -59,7 +53,6 @@ export default function Loader() {
     }
   }, [phase])
 
-  // Unmount once the wipe has finished.
   useEffect(() => {
     if (phase !== 'leaving') return undefined
     const timer = setTimeout(() => setPhase('done'), EXIT_MS)

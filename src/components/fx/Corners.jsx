@@ -1,4 +1,3 @@
-// HUD-style corner brackets around a positioned parent.
 const CORNERS = [
   'top-0 left-0 border-t-2 border-l-2 rounded-tl-[6px]',
   'top-0 right-0 border-t-2 border-r-2 rounded-tr-[6px]',

@@ -15,7 +15,6 @@ import { getRiskLevelInfo } from '../lib/risk.js'
 import Corners from './fx/Corners.jsx'
 import ScrambleText from './fx/ScrambleText.jsx'
 import RiskReport from './RiskReport.jsx'
-import SourceBadge from './SourceBadge.jsx'
 import { buttonClass, CARD_CLASS, ICON_TILE_CLASS, LABEL_CLASS } from './ui.js'
 
 const ERROR_COPY = {
@@ -28,7 +27,6 @@ const FALLBACK_ERROR = { title: 'Something went wrong', icon: CircleX }
 
 export default function ResultsPanel({ ref, status, result, error, isStale, onRetry, onReset }) {
   const isLoading = status === 'loading'
-  // While a new analysis runs, the previous report stays visible but dimmed.
   const isRefreshing = isLoading && Boolean(result)
 
   return (
@@ -44,16 +42,9 @@ export default function ResultsPanel({ ref, status, result, error, isStale, onRe
         Output / 02
       </p>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h3 id="results-heading" className="text-xl font-semibold tracking-tight text-white">
-            Risk report
-          </h3>
-          {result && (
-            <SourceBadge mock={result.source === 'mock'}>
-              {result.source === 'mock' ? 'Mock result' : 'Live analysis'}
-            </SourceBadge>
-          )}
-        </div>
+        <h3 id="results-heading" className="text-xl font-semibold tracking-tight text-white">
+          Risk report
+        </h3>
         {isRefreshing ? (
           <p className="flex items-center gap-1.5 text-xs font-medium text-teal-200">
             <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
@@ -197,8 +188,7 @@ function announcement(status, result, error) {
   if (status === 'success' && result) {
     const { label } = getRiskLevelInfo(result.riskLevel)
     const count = result.warnings.length
-    const prefix = result.source === 'mock' ? 'Mock result. ' : ''
-    return `${prefix}Analysis complete: ${label}, score ${Math.round(result.riskScore)} out of 100, ${count} warning ${count === 1 ? 'sign' : 'signs'}.`
+    return `Analysis complete: ${label}, score ${Math.round(result.riskScore)} out of 100, ${count} warning ${count === 1 ? 'sign' : 'signs'}.`
   }
   return ''
 }

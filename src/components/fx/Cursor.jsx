@@ -3,11 +3,6 @@ import { useFinePointer, useReducedMotion } from '../../hooks/useMediaQuery.js'
 
 const INTERACTIVE = 'a, button, input, textarea, summary, [data-cursor]'
 
-/**
- * A teal dot and ring that trail the mouse and swell over interactive elements.
- * Decorative only: the normal cursor stays visible, and it's off for touch
- * screens and reduced motion.
- */
 export default function Cursor() {
   const finePointer = useFinePointer()
   const reduceMotion = useReducedMotion()

@@ -3,9 +3,6 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import App from './App.jsx'
 
-// Same app, with mock mode switched off as if VITE_USE_MOCK_API=false.
-vi.mock('./config.js', async (importOriginal) => ({ ...(await importOriginal()), USE_MOCK_API: false }))
-
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
@@ -28,7 +25,6 @@ describe('Sentinel connected to the backend', () => {
     vi.stubGlobal('fetch', fetchMock)
     const user = userEvent.setup()
     render(<App />)
-    expect(screen.getByText('Live API')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText(/investment message/i), 'Act now: 30% monthly returns!')
     await user.type(screen.getByLabelText(/link from the message/i), 'fast-returns.example/join')
@@ -53,8 +49,6 @@ describe('Sentinel connected to the backend', () => {
     expect(screen.getByText('Unregistered seller')).toBeInTheDocument()
     expect(screen.getByText('High risk')).toBeInTheDocument()
     expect(screen.getByRole('meter', { name: /risk score/i })).toHaveAttribute('aria-valuenow', '63')
-    expect(screen.getByText('Live analysis')).toBeInTheDocument()
-    expect(screen.queryByText(/mock result/i)).not.toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 

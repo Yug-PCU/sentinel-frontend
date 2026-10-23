@@ -5,7 +5,6 @@ import AnalyzerForm from './AnalyzerForm.jsx'
 import ResultsPanel from './ResultsPanel.jsx'
 import SectionHeader from './SectionHeader.jsx'
 
-// On narrow screens the report sits below the form, so bring it into view when analysis starts.
 function revealResults(element) {
   if (!element) return
   const { top } = element.getBoundingClientRect()
@@ -23,7 +22,6 @@ export default function Analyzer() {
   const urlRef = useRef(null)
   const resultsRef = useRef(null)
 
-  // The report is stale once the form no longer matches what was analyzed.
   const { result } = analysis
   const current = result ? validateAnalysisInput({ message, url }).values : null
   const isStale = Boolean(result) && (current.message !== result.input.message || current.url !== result.input.url)

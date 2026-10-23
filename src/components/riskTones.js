@@ -1,8 +1,5 @@
 import { CircleAlert, OctagonAlert, ShieldCheck, ShieldQuestionMark, TriangleAlert } from 'lucide-react'
 
-// Colors and icons per risk level. Risk colors are reserved for risk and always
-// appear next to a text label. Class names are written out in full so Tailwind
-// can find them.
 const TONES = {
   low: {
     icon: ShieldCheck,
