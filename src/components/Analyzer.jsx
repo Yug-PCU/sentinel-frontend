@@ -4,6 +4,7 @@ import { validateAnalysisInput } from '../lib/validation.js'
 import AnalyzerForm from './AnalyzerForm.jsx'
 import ResultsPanel from './ResultsPanel.jsx'
 import SectionHeader from './SectionHeader.jsx'
+import { CONTAINER_CLASS } from './ui.js'
 
 function revealResults(element) {
   if (!element) return
@@ -63,17 +64,15 @@ export default function Analyzer() {
   }
 
   return (
-    <section id="analyze" aria-labelledby="analyze-heading" className="scroll-mt-20 px-4 pt-16 pb-24 sm:px-8 xl:pl-24">
-      <div className="mx-auto max-w-[96rem]">
-        <SectionHeader id="analyze-heading" index="001" eyebrow="Analyze" title="Scan a message">
-          <p>
-            Paste the message below, plus its link if it has one. You'll get a 0–100 risk score and an explanation of
-            every warning sign.
-          </p>
-        </SectionHeader>
-      </div>
-      <div className="mx-auto mt-10 grid max-w-[96rem] gap-6 lg:grid-cols-12 lg:items-start">
-        <div className="lg:col-span-5">
+    <section id="analyze" aria-labelledby="analyze-heading" className={`${CONTAINER_CLASS} scroll-mt-20 pt-12 pb-24`}>
+      <SectionHeader id="analyze-heading" eyebrow="Analyze" title="Scan a message">
+        <p>
+          You'll get a 0–100 risk score, every warning sign ranked by severity, and the phrases behind each one
+          highlighted in your message.
+        </p>
+      </SectionHeader>
+      <div className="mt-10 grid gap-6 lg:grid-cols-12 lg:items-start">
+        <div className="lg:sticky lg:top-24 lg:col-span-5">
           <AnalyzerForm
             message={message}
             url={url}

@@ -1,9 +1,7 @@
 import { CircleAlert, Link2, LoaderCircle, Lock, RotateCcw, ScanSearch, X } from 'lucide-react'
 import { MAX_MESSAGE_LENGTH } from '../config.js'
 import { SAMPLE_MESSAGES } from '../data/samples.js'
-import Corners from './fx/Corners.jsx'
-import ScrambleText from './fx/ScrambleText.jsx'
-import { buttonClass, CARD_CLASS, LABEL_CLASS } from './ui.js'
+import { buttonClass, CARD_CLASS } from './ui.js'
 
 const formatCount = (count) => count.toLocaleString('en-US')
 
@@ -66,13 +64,8 @@ export default function AnalyzerForm({
       aria-labelledby="analyzer-heading"
       className={`${CARD_CLASS} p-5 sm:p-6`}
     >
-      <Corners />
-      <p className={LABEL_CLASS}>
-        <span aria-hidden="true" className="size-1.5 bg-teal-300" />
-        Input / 01
-      </p>
-      <h3 id="analyzer-heading" className="mt-3 text-xl font-semibold tracking-tight text-white">
-        Analyze a message
+      <h3 id="analyzer-heading" className="text-xl font-semibold tracking-tight text-white">
+        Message
       </h3>
       <p className="mt-1 text-sm text-pretty text-navy-300">Paste the investment offer exactly as you received it.</p>
 
@@ -115,9 +108,8 @@ export default function AnalyzerForm({
               type="button"
               disabled={isLoading}
               onClick={() => onSample(sample)}
-              className="group/chip flex items-center gap-2 rounded-full border border-navy-500 bg-navy-800/60 px-3 py-1.5 text-xs font-medium text-navy-200 transition-colors hover:border-teal-400/60 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg border border-navy-500 bg-navy-800/60 px-3 py-1.5 text-xs font-medium text-navy-200 transition-colors hover:border-teal-400/60 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span aria-hidden="true" className="size-1 bg-navy-400 transition-colors group-hover/chip:bg-teal-300" />
               {sample.label}
             </button>
           ))}
@@ -167,7 +159,7 @@ export default function AnalyzerForm({
           ) : (
             <>
               <ScanSearch className="size-4" aria-hidden="true" />
-              <ScrambleText text="Analyze message" trigger="hover" duration={450} />
+              Analyze message
             </>
           )}
         </button>

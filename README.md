@@ -1,8 +1,10 @@
 # Sentinel frontend
 
 Web interface for Sentinel, a financial scam detector. Users paste an investment
-message (and optionally a link from it), and Sentinel shows a 0–100 risk score, a
-risk category, and an explanation of each warning sign.
+message (and optionally a link from it), and Sentinel returns an evidence-backed
+risk report: a 0–100 score and verdict, every warning sign ranked by severity, the
+exact phrases behind each one highlighted in the original message, and a
+plain-text copy of the report to send to a bank or fraud hotline.
 
 Built with React 19, Vite 8, and Tailwind CSS 4. This repo is the frontend. The
 analysis runs in the sibling `sentinel-backend` service at `POST /analyze`; there
@@ -139,11 +141,12 @@ src/
 │   └── errors.js          AnalysisError with kind: network | timeout | http | invalid_response
 ├── hooks/
 │   ├── useAnalysis.js     Request state (idle → loading → success | error), cancel, retry
-│   ├── useMediaQuery.js   Reduced-motion and mouse/trackpad detection
+│   ├── useMediaQuery.js   Media queries, including reduced motion
 │   ├── useInView.js       "Has this scrolled into view?" for reveal animations
-│   └── useScrollTracking.js  Scroll progress (CSS variable) and the active section for the nav
+│   └── useScrollTracking.js  The active section for the nav
 ├── lib/
 │   ├── risk.js            Risk level labels, summaries, advice, and level normalization
+│   ├── report.js          Report analysis: severity ranking and counts, evidence highlighting, text export
 │   └── validation.js      Form validation and link normalization
 ├── data/
 │   └── samples.js         "Try an example" messages
@@ -151,15 +154,18 @@ src/
 │   ├── Analyzer.jsx       Holds the form state and connects the form to the results panel
 │   ├── AnalyzerForm.jsx   Message box, optional link, examples, Analyze / Cancel / Clear
 │   ├── ResultsPanel.jsx   Empty, loading, error, and report states
-│   ├── RiskReport.jsx     Score, category, warning signs, next steps
+│   ├── RiskReport.jsx     Verdict, metrics, ranked warning signs, evidence, actions, copy report
 │   ├── RiskGauge.jsx      0–100 semicircle meter
 │   ├── RiskBadge.jsx      Risk category pill (icon + label)
-│   ├── WarningList.jsx    Warning signs with severity
-│   ├── Frame.jsx          HUD around the page: top bar, section nav, side rail, full-screen menu
-│   ├── Hero.jsx, HeroScene.jsx   Headline plus the 3D "scam radar" card (static fallback without WebGL)
+│   ├── ReportMetrics.jsx  Stat tiles: warning count, top severity, evidence coverage, link
+│   ├── SeverityBreakdown.jsx  Stacked bar and legend of warning signs per severity
+│   ├── WarningList.jsx    Numbered warning signs, most severe first, with quoted evidence
+│   ├── AnnotatedMessage.jsx   The message with evidence highlighted and linked to its warning sign
+│   ├── Frame.jsx          Sticky header with section nav and a mobile menu
+│   ├── Hero.jsx, HeroScene.jsx   Headline plus the 3D "scam radar" card (wide screens; static fallback without WebGL)
 │   ├── scene/RadarScene.js       The three.js scene, loaded on demand in its own chunk
 │   ├── SectionHeader.jsx, HowItWorks.jsx, RedFlags.jsx, Footer.jsx
-│   ├── fx/                Effects: Loader (intro), Cursor, ScrambleText, Reveal, Marquee, TiltCard, Corners
+│   ├── fx/Reveal.jsx      Fade-in on scroll
 │   ├── Logo.jsx
 │   ├── riskTones.js       Colors and icons for each risk level
 │   └── ui.js              Shared button and card classes
@@ -181,10 +187,10 @@ Tests sit next to the code they cover (`*.test.js` / `*.test.jsx`).
   score, and reduced-motion support.
 - Fonts are bundled locally (Inter for text and data, Archivo for headlines,
   JetBrains Mono for labels), so pages make no requests to third-party font hosts.
-- Motion: an intro counter (once per browser session), a 3D radar that reacts to
-  the mouse, decoding text, scroll reveals, a marquee, tilt cards, and a trailing
-  cursor. With "reduce motion" turned on in the operating system, all of it is off
-  and the 3D scene renders a single still frame. The cursor and tilt only appear
-  on mouse/trackpad devices.
+- The analysis is the focus: the page leads straight into the analyzer, and the
+  report favors evidence (ranked findings, highlighted quotes, counts) over
+  decoration. Motion is limited to the 3D radar, the gauge sweep, the loading
+  scan line, and subtle scroll reveals. With "reduce motion" turned on in the
+  operating system, all of it is off and the 3D scene renders a single still frame.
 - three.js (~140 kB gzipped) loads in a separate chunk after the page renders,
-  so it never delays the analyzer.
+  and only on screens wide enough to show the radar, so it never delays the analyzer.

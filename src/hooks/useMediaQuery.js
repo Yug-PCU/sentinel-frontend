@@ -18,7 +18,3 @@ export function useReducedMotion() {
   return useMediaQuery('(prefers-reduced-motion: reduce)')
 }
 
-/** True on devices with a precise pointer (mouse or trackpad) that can hover. */
-export function useFinePointer() {
-  return useMediaQuery('(hover: hover) and (pointer: fine)')
-}

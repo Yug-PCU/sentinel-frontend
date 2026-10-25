@@ -93,9 +93,53 @@ describe('Sentinel analyzer', () => {
     const report = within(screen.getByRole('region', { name: /risk report/i }))
     expect(report.getByRole('meter', { name: /risk score/i })).toHaveAttribute('aria-valuenow', '82')
     expect(report.getByText('Critical risk')).toBeInTheDocument()
-    expect(report.getByText(/guarantees 40% returns/i)).toBeInTheDocument()
+    expect(within(report.getByRole('list', { name: 'Evidence' })).getByText(/guarantees 40% returns/i)).toBeInTheDocument()
     expect(screen.queryByText(/what was analyzed/i)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /analyze message/i })).toBeEnabled()
+
+    // The quote is highlighted in the original message and linked to its warning sign.
+    const evidence = within(report.getByRole('region', { name: /evidence in context/i }))
+    expect(evidence.getByText('guarantees 40% returns').closest('mark')).toBeInTheDocument()
+    expect(evidence.getByRole('link', { name: /warning sign 1/i })).toHaveAttribute('href', '#finding-1')
+    expect(evidence.getByText(/1 of 1 quoted phrase found/i)).toBeInTheDocument()
+    expect(report.getByText('vip-crypto-returns.example')).toBeInTheDocument()
+
+    await user.click(report.getByRole('button', { name: /copy report/i }))
+    expect(report.getByRole('button', { name: /copied/i })).toBeInTheDocument()
+    const copied = await navigator.clipboard.readText()
+    expect(copied).toContain('Risk score: 82/100 (Critical risk)')
+    expect(copied).toContain('1. Guaranteed high returns [Critical]')
+  })
+
+  it('ranks warning signs by severity and summarizes them', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({
+          risk_score: 70,
+          risk_level: 'high',
+          warnings: [
+            { title: 'Unsolicited contact', severity: 'medium' },
+            { title: 'Insider information', severity: 'high' },
+            'Moves chat to WhatsApp',
+          ],
+        }),
+      ),
+    )
+    const { user } = renderApp()
+    await user.click(screen.getByRole('button', { name: sample('wrong-number-stock').label }))
+    await user.click(screen.getByRole('button', { name: /analyze message/i }))
+
+    const findings = await screen.findByText('Insider information', {}, RESULT_WAIT)
+    const items = within(findings.closest('ol')).getAllByRole('listitem')
+    expect(items.map((item) => item.id)).toEqual(['finding-1', 'finding-2', 'finding-3'])
+    expect(items[0]).toHaveTextContent('Insider information')
+    expect(items[2]).toHaveTextContent('Unrated')
+
+    const breakdown = within(screen.getByRole('list', { name: /by severity/i }))
+    expect(breakdown.getByText('High').parentElement).toHaveTextContent('High 1 of 3')
+    expect(breakdown.getByText('Unrated').parentElement).toHaveTextContent('Unrated 1 of 3')
+    expect(screen.queryByRole('region', { name: /evidence in context/i })).not.toBeInTheDocument()
   })
 
   it('submits with Ctrl+Enter from the message field', async () => {

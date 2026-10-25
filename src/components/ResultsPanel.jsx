@@ -1,7 +1,9 @@
 import {
   CircleX,
+  ClipboardCopy,
   Clock,
   Gauge,
+  Highlighter,
   Hourglass,
   ListChecks,
   LoaderCircle,
@@ -12,10 +14,8 @@ import {
 } from 'lucide-react'
 import { AnalysisError } from '../api/errors.js'
 import { getRiskLevelInfo } from '../lib/risk.js'
-import Corners from './fx/Corners.jsx'
-import ScrambleText from './fx/ScrambleText.jsx'
 import RiskReport from './RiskReport.jsx'
-import { buttonClass, CARD_CLASS, ICON_TILE_CLASS, LABEL_CLASS } from './ui.js'
+import { buttonClass, CARD_CLASS, ICON_TILE_CLASS } from './ui.js'
 
 const ERROR_COPY = {
   network: { title: "Can't reach the analysis service", icon: WifiOff },
@@ -36,12 +36,7 @@ export default function ResultsPanel({ ref, status, result, error, isStale, onRe
       aria-busy={isLoading}
       className={`${CARD_CLASS} scroll-mt-24 p-5 sm:p-6`}
     >
-      <Corners />
-      <p className={LABEL_CLASS}>
-        <span aria-hidden="true" className={`size-1.5 bg-teal-300 ${isLoading ? 'animate-blink' : ''}`} />
-        Output / 02
-      </p>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h3 id="results-heading" className="text-xl font-semibold tracking-tight text-white">
           Risk report
         </h3>
@@ -82,14 +77,15 @@ export default function ResultsPanel({ ref, status, result, error, isStale, onRe
 
 function EmptyState() {
   const items = [
-    { icon: Gauge, text: 'A risk score from 0 (low) to 100 (high)' },
-    { icon: ShieldCheck, text: 'A risk category: low, medium, high, or critical' },
-    { icon: ListChecks, text: 'Each warning sign, explained in plain language' },
+    { icon: Gauge, text: 'A 0–100 risk score and a verdict from low to critical' },
+    { icon: ListChecks, text: 'Every warning sign, ranked by severity and explained' },
+    { icon: Highlighter, text: 'The exact phrases that triggered each warning, highlighted' },
+    { icon: ClipboardCopy, text: 'A plain-text report you can send to your bank' },
   ]
   return (
     <div className="flex flex-col items-center px-2 py-10 text-center sm:py-14">
       <div className={`${ICON_TILE_CLASS} size-14 rounded-2xl`}>
-        <Gauge className="size-7" aria-hidden="true" />
+        <ShieldCheck className="size-7" aria-hidden="true" />
       </div>
       <h4 className="mt-5 text-lg font-semibold text-white">Your risk report will appear here</h4>
       <p className="mt-2 max-w-sm text-sm text-navy-300">Paste a message and select Analyze. You'll get:</p>
@@ -112,18 +108,11 @@ function LoadingState() {
       <p className="flex items-center gap-3 text-sm font-medium text-navy-100">
         <LoaderCircle className="size-5 animate-spin text-teal-300" aria-hidden="true" />
         Analyzing message…
-        <ScrambleText
-          text="Scanning for red flags"
-          trigger="view"
-          duration={1200}
-          aria-hidden="true"
-          className="ml-auto hidden font-mono text-[11px] tracking-[0.16em] text-teal-200 uppercase sm:inline"
-        />
       </p>
       <div aria-hidden="true" className="relative">
         {/* A scan line sweeping down over the placeholder report. */}
         <div className="pointer-events-none absolute inset-x-0 z-10 h-px animate-scan bg-linear-to-r from-transparent via-teal-300 to-transparent shadow-[0_0_18px_2px_rgb(45_212_191/0.5)] motion-reduce:hidden" />
-        <div className="mt-5 grid items-center gap-6 rounded-2xl border border-white/5 bg-navy-900/60 p-5 sm:grid-cols-[minmax(0,15rem)_1fr] sm:p-6">
+        <div className="mt-5 grid items-center gap-6 rounded-xl border border-white/5 bg-navy-950/60 p-5 sm:grid-cols-[minmax(0,13rem)_1fr] sm:p-6">
           <div className={`${pulse} mx-auto aspect-[2/1] w-full max-w-60 rounded-t-full`} />
           <div className="space-y-3">
             <div className={`${pulse} h-3 w-24`} />
@@ -134,7 +123,7 @@ function LoadingState() {
         </div>
         <div className="mt-6 space-y-3">
           {[0, 1, 2].map((row) => (
-            <div key={row} className="flex gap-3 rounded-xl border border-white/5 bg-navy-900/60 p-4">
+            <div key={row} className="flex gap-3 rounded-xl border border-white/5 bg-navy-950/60 p-4">
               <div className={`${pulse} size-5 shrink-0`} />
               <div className="flex-1 space-y-2">
                 <div className={`${pulse} h-3 w-2/5`} />
